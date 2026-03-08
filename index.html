@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#2d6a4f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="SermonNotes">
+<meta name="description" content="A beautiful sermon note-taking app with live NKJV Bible verse popups">
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+
+<!-- iOS Home Screen Icons -->
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon.ico">
+
+<title>SermonNotes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f7f7f5; --surface: #fff; --border: #e8e6e0;
+  --text: #1a1a1a; --muted: #8a8a8a;
+  --accent: #2d6a4f; --accent-h: #1e4d38; --accent-lt: #e8f4ee;
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.16);
+  --st: env(safe-area-inset-top,0px); --sb: env(safe-area-inset-bottom,0px);
+}
+html { scroll-behavior: smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overscroll-behavior:none; }
+
+/* TOOLBAR */
+.toolbar {
+  position:sticky; top:0; z-index:200;
+  padding:calc(12px + var(--st)) 18px 12px;
+  background:rgba(247,247,245,0.94);
+  backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+}
+.brand { display:flex; align-items:center; gap:7px; font-family:'Lora',serif; font-size:1rem; font-weight:600; color:var(--accent); margin-right:auto; white-space:nowrap; }
+.brand svg { width:18px; height:18px; }
+.btn { display:inline-flex; align-items:center; gap:5px; padding:8px 13px; border-radius:8px; border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-family:'DM Sans',sans-serif; font-size:0.82rem; font-weight:500; cursor:pointer; white-space:nowrap; transition:all .15s; -webkit-tap-highlight-color:transparent; }
+.btn:hover,.btn:active { background:var(--border); }
+.btn svg { width:13px; height:13px; }
+.btn-accent { background:var(--accent); color:#fff; border-color:var(--accent); }
+.btn-accent:hover,.btn-accent:active { background:var(--accent-h); border-color:var(--accent-h); }
+
+/* PAGE */
+.page { max-width:740px; margin:0 auto; padding:36px 20px calc(80px + var(--sb)); }
+
+/* HEADER */
+.sermon-meta { font-size:.74rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.1em; margin-bottom:12px; }
+.sermon-title { font-family:'Lora',serif; font-size:clamp(1.6rem,5vw,2.2rem); font-weight:600; border:none; outline:none; background:transparent; color:var(--text); width:100%; line-height:1.25; resize:none; overflow:hidden; }
+.sermon-title::placeholder { color:#ccc; }
+.sermon-speaker { font-size:.92rem; color:var(--muted); border:none; outline:none; background:transparent; width:100%; margin-top:8px; font-family:'DM Sans',sans-serif; }
+.sermon-speaker::placeholder { color:#d0d0d0; }
+.divider { height:1px; background:var(--border); margin:24px 0; }
+
+/* SECTIONS */
+.section-block { margin-bottom:28px; }
+.section-header { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.section-num { width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font-size:.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.section-title { font-family:'Lora',serif; font-size:1.1rem; font-weight:600; border:none; outline:none; background:transparent; color:var(--text); flex:1; min-width:0; }
+.section-title::placeholder { color:#ccc; }
+.rm-btn { background:none; border:none; cursor:pointer; color:#d0d0d0; padding:4px; display:flex; align-items:center; border-radius:4px; transition:color .15s; -webkit-tap-highlight-color:transparent; }
+.rm-btn:hover { color:#e74c3c; }
+.rm-btn svg { width:14px; height:14px; }
+.note-editor { font-family:'DM Sans',sans-serif; font-size:.96rem; line-height:1.85; color:var(--text); background:transparent; width:100%; min-height:80px; padding-left:34px; outline:none; white-space:pre-wrap; word-break:break-word; }
+.note-editor:empty::before { content:attr(data-placeholder); color:#ccc; pointer-events:none; }
+.add-sec-btn { display:flex; align-items:center; gap:8px; background:none; border:none; color:var(--muted); font-family:'DM Sans',sans-serif; font-size:.85rem; cursor:pointer; padding:8px 0; transition:color .15s; -webkit-tap-highlight-color:transparent; }
+.add-sec-btn:hover { color:var(--accent); }
+.add-sec-btn svg { width:16px; height:16px; }
+
+/* CHIP */
+.verse-chip { display:inline-flex; align-items:center; gap:4px; background:var(--accent-lt); color:var(--accent); border:1px solid rgba(45,106,79,.25); border-radius:20px; padding:2px 9px 2px 7px; font-size:.8rem; font-weight:600; cursor:pointer; white-space:nowrap; vertical-align:middle; margin:0 2px; font-family:'DM Sans',sans-serif; transition:all .15s; -webkit-tap-highlight-color:transparent; user-select:none; }
+.verse-chip:hover,.verse-chip:active { background:var(--accent); color:#fff; border-color:var(--accent); }
+.verse-chip svg { width:10px; height:10px; }
+
+/* POPUP */
+.verse-popup { position:fixed; z-index:500; width:320px; max-width:calc(100vw - 32px); background:var(--surface); border-radius:14px; box-shadow:var(--shadow-lg); border:1px solid var(--border); overflow:hidden; animation:popIn .22s cubic-bezier(.34,1.56,.64,1); }
+@keyframes popIn { from{opacity:0;transform:scale(.88) translateY(-8px)} to{opacity:1;transform:none} }
+.popup-head { background:var(--accent); color:#fff; padding:12px 14px; display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
+.popup-ref { font-family:'Lora',serif; font-size:.95rem; font-weight:600; }
+.popup-trans { font-size:.7rem; opacity:.75; margin-top:2px; }
+.popup-close { background:none; border:none; color:#fff; cursor:pointer; display:flex; align-items:center; opacity:.8; flex-shrink:0; padding:2px; transition:opacity .15s; -webkit-tap-highlight-color:transparent; }
+.popup-close:hover { opacity:1; }
+.popup-close svg { width:16px; height:16px; }
+.popup-body { padding:14px 16px; }
+.popup-text { font-family:'Lora',serif; font-size:.93rem; line-height:1.75; font-style:italic; color:var(--text); }
+.vnum { font-style:normal; font-size:.65rem; font-weight:700; color:var(--accent); vertical-align:super; margin-right:3px; font-family:'DM Sans',sans-serif; }
+.popup-loading { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:.85rem; }
+.spinner { width:15px; height:15px; border:2px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin .6s linear infinite; }
+@keyframes spin { to{transform:rotate(360deg)} }
+.popup-error { color:var(--muted); font-size:.85rem; line-height:1.55; }
+
+/* MODAL */
+.modal-backdrop { position:fixed; inset:0; background:rgba(0,0,0,.35); backdrop-filter:blur(3px); -webkit-backdrop-filter:blur(3px); z-index:400; display:flex; align-items:center; justify-content:center; padding:20px; animation:fadeIn .15s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.modal { background:var(--surface); border-radius:16px; width:100%; max-width:400px; box-shadow:var(--shadow-lg); overflow:hidden; animation:slideUp .22s cubic-bezier(.34,1.56,.64,1); }
+@keyframes slideUp { from{opacity:0;transform:translateY(24px) scale(.97)} to{opacity:1;transform:none} }
+.modal-head { padding:18px 20px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.modal-title { font-family:'Lora',serif; font-size:1.05rem; font-weight:600; }
+.modal-body { padding:18px 20px; }
+.label { display:block; font-size:.74rem; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.08em; margin-bottom:8px; }
+.field { width:100%; padding:10px 13px; border:1.5px solid var(--border); border-radius:8px; font-family:'DM Sans',sans-serif; font-size:.95rem; outline:none; color:var(--text); background:var(--bg); transition:border-color .15s; }
+.field:focus { border-color:var(--accent); }
+.hint { font-size:.75rem; color:var(--muted); margin-top:6px; }
+.modal-foot { padding:14px 20px; border-top:1px solid var(--border); display:flex; justify-content:flex-end; gap:10px; }
+
+/* INSTALL BANNER */
+.install-banner { position:fixed; bottom:calc(16px + var(--sb)); left:50%; transform:translateX(-50%) translateY(120px); background:#1a1a1a; color:#fff; border-radius:14px; padding:14px 16px; display:flex; align-items:center; gap:10px; box-shadow:var(--shadow-lg); z-index:300; max-width:calc(100vw - 32px); width:max-content; transition:transform .4s cubic-bezier(.34,1.56,.64,1); }
+.install-banner.show { transform:translateX(-50%) translateY(0); }
+.install-banner span { font-size:.83rem; font-weight:500; }
+.install-btn { background:var(--accent); color:#fff; border:none; border-radius:8px; padding:7px 13px; font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; cursor:pointer; white-space:nowrap; -webkit-tap-highlight-color:transparent; }
+.install-dismiss { background:none; border:none; color:rgba(255,255,255,.5); cursor:pointer; font-size:1.1rem; line-height:1; padding:0 2px; }
+
+/* OFFLINE BADGE */
+.offline-badge { display:none; position:fixed; top:calc(70px + var(--st)); right:16px; background:#e74c3c; color:#fff; font-size:.72rem; font-weight:600; padding:5px 10px; border-radius:20px; z-index:300; }
+body.offline .offline-badge { display:block; }
+
+/* TOAST */
+.toast { position:fixed; bottom:calc(28px + var(--sb)); left:50%; transform:translateX(-50%) translateY(80px); background:#1a1a1a; color:#fff; padding:9px 18px; border-radius:24px; font-size:.82rem; font-weight:500; z-index:999; transition:transform .3s cubic-bezier(.34,1.56,.64,1); white-space:nowrap; pointer-events:none; }
+.toast.show { transform:translateX(-50%) translateY(0); }
+
+@media(max-width:480px){
+  .btn span{display:none}
+  .btn{padding:8px 10px}
+  .brand{font-size:.9rem}
+}
+</style>
+</head>
+<body>
+
+<div class="offline-badge">📵 Offline</div>
+
+<div class="toolbar">
+  <div class="brand">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    SermonNotes
+  </div>
+  <button class="btn" onclick="openModal()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    <span>Insert Verse</span>
+  </button>
+  <button class="btn btn-accent" onclick="saveNotes()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17,21 17,13 7,13 7,21"/><polyline points="7,3 7,8 15,8"/></svg>
+    <span>Save</span>
+  </button>
+</div>
+
+<div class="page">
+  <div class="sermon-meta" id="sermon-date"></div>
+  <textarea class="sermon-title" id="sermon-title" placeholder="Sermon Title" rows="1" oninput="autoResize(this)"></textarea>
+  <input class="sermon-speaker" id="sermon-speaker" placeholder="Speaker · Church Name" type="text">
+  <div class="divider"></div>
+  <div id="sections"></div>
+  <button class="add-sec-btn" onclick="addSection()">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    Add Section
+  </button>
+</div>
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-head">
+      <div class="modal-title">Insert Bible Verse</div>
+      <button class="popup-close" onclick="closeModal()" style="color:var(--text)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <label class="label">Scripture Reference</label>
+      <input class="field" id="verseInput" placeholder="e.g. John 3:16 or Psalm 23:1-3" autocomplete="off"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();doInsertVerse();}">
+      <div class="hint">NKJV text will be fetched live as a tappable verse chip.</div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-accent" onclick="doInsertVerse()">Insert</button>
+    </div>
+  </div>
+</div>
+
+<!-- Verse Popup -->
+<div class="verse-popup" id="popup" style="display:none">
+  <div class="popup-head">
+    <div><div class="popup-ref" id="popup-ref"></div><div class="popup-trans">NKJV · New King James Version</div></div>
+    <button class="popup-close" onclick="closePopup()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+  <div class="popup-body" id="popup-body"></div>
+</div>
+
+<!-- Install Banner -->
+<div class="install-banner" id="installBanner">
+  <span>📲 Add to your home screen</span>
+  <button class="install-btn" onclick="triggerInstall()">Install App</button>
+  <button class="install-dismiss" onclick="dismissInstall()">✕</button>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── BOOK MAP ──────────────────────────────────────────────────
+const BOOKS = {'genesis':1,'gen':1,'ge':1,'gn':1,'exodus':2,'exo':2,'ex':2,'exod':2,'leviticus':3,'lev':3,'le':3,'lv':3,'numbers':4,'num':4,'nu':4,'nm':4,'deuteronomy':5,'deut':5,'dt':5,'deu':5,'joshua':6,'josh':6,'jos':6,'judges':7,'judg':7,'jdg':7,'ruth':8,'1samuel':9,'1sam':9,'1sa':9,'2samuel':10,'2sam':10,'2sa':10,'1kings':11,'1kgs':11,'1ki':11,'2kings':12,'2kgs':12,'2ki':12,'1chronicles':13,'1chr':13,'1ch':13,'2chronicles':14,'2chr':14,'2ch':14,'ezra':15,'ezr':15,'nehemiah':16,'neh':16,'ne':16,'esther':17,'esth':17,'est':17,'job':18,'jb':18,'psalms':19,'psalm':19,'psa':19,'ps':19,'proverbs':20,'prov':20,'pro':20,'prv':20,'ecclesiastes':21,'eccl':21,'ecc':21,'songofsolomon':22,'song':22,'sos':22,'isaiah':23,'isa':23,'is':23,'jeremiah':24,'jer':24,'je':24,'lamentations':25,'lam':25,'la':25,'ezekiel':26,'ezek':26,'eze':26,'daniel':27,'dan':27,'da':27,'hosea':28,'hos':28,'ho':28,'joel':29,'jl':29,'amos':30,'am':30,'obadiah':31,'obad':31,'ob':31,'jonah':32,'jon':32,'micah':33,'mic':33,'mi':33,'nahum':34,'nah':34,'na':34,'habakkuk':35,'hab':35,'zephaniah':36,'zeph':36,'zep':36,'haggai':37,'hag':37,'zechariah':38,'zech':38,'zec':38,'malachi':39,'mal':39,'matthew':40,'matt':40,'mt':40,'mark':41,'mrk':41,'mk':41,'luke':42,'luk':42,'lk':42,'john':43,'jhn':43,'jn':43,'acts':44,'act':44,'ac':44,'romans':45,'rom':45,'ro':45,'rm':45,'1corinthians':46,'1cor':46,'1co':46,'2corinthians':47,'2cor':47,'2co':47,'galatians':48,'gal':48,'ga':48,'ephesians':49,'eph':49,'philippians':50,'phil':50,'php':50,'colossians':51,'col':51,'1thessalonians':52,'1thess':52,'1th':52,'2thessalonians':53,'2thess':53,'2th':53,'1timothy':54,'1tim':54,'1ti':54,'2timothy':55,'2tim':55,'2ti':55,'titus':56,'tit':56,'philemon':57,'phlm':57,'phm':57,'hebrews':58,'heb':58,'james':59,'jas':59,'jm':59,'1peter':60,'1pet':60,'1pe':60,'2peter':61,'2pet':61,'2pe':61,'1john':62,'1jhn':62,'1jn':62,'2john':63,'2jhn':63,'2jn':63,'3john':64,'3jhn':64,'3jn':64,'jude':65,'jud':65,'revelation':66,'rev':66,'re':66,'rv':66};
+
+function lookupBook(raw) {
+  const clean = raw.toLowerCase().replace(/\s+/g,'');
+  if (BOOKS[clean] !== undefined) return BOOKS[clean];
+  const alt = raw.toLowerCase().replace(/(\d)\s+/g,'$1').replace(/\s+/g,'');
+  return BOOKS[alt] !== undefined ? BOOKS[alt] : null;
+}
+function parseRef(raw) {
+  raw = raw.trim();
+  const m = raw.match(/^((?:[123]\s*)?[A-Za-z]+(?:\s+[A-Za-z]+)?)\s+(\d+):(\d+)(?:-(\d+))?$/);
+  if (!m) return null;
+  const bookId = lookupBook(m[1]);
+  if (!bookId) return null;
+  return { bookId, chapter:+m[2], verseStart:+m[3], verseEnd:m[4] ? +m[4] : null };
+}
+
+// ── BIBLE API ──────────────────────────────────────────────────
+const cache = {};
+async function fetchVerse(ref) {
+  if (cache[ref]) return cache[ref];
+  const p = parseRef(ref);
+  if (!p) throw new Error('Unrecognised reference: ' + ref);
+  const res = await fetch(`https://bolls.life/get-text/NKJV/${p.bookId}/${p.chapter}/`);
+  if (!res.ok) throw new Error('Network error (' + res.status + ')');
+  const data = await res.json();
+  const end = p.verseEnd || p.verseStart;
+  const sel = data.filter(v => v.verse >= p.verseStart && v.verse <= end);
+  if (!sel.length) throw new Error('Verse not found in chapter');
+  const html = sel.map(v => `<sup class="vnum">${v.verse}</sup>${v.text.replace(/<[^>]+>/g,'').trim()}`).join(' ');
+  cache[ref] = html;
+  return html;
+}
+
+// ── STATE ──────────────────────────────────────────────────────
+let sections = [], activeSection = null;
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('sermon-date').textContent =
+    new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  loadNotes();
+  if (!sections.length) addSection('Introduction');
+  initPWA();
+  initOfflineDetection();
+});
+
+// ── SECTIONS ───────────────────────────────────────────────────
+function addSection(defTitle='') {
+  const id = 'sec_' + Date.now() + '_' + Math.random().toString(36).slice(2,5);
+  sections.push({id, title:defTitle, contentHTML:''});
+  renderSections();
+  if (!defTitle) setTimeout(() => document.getElementById('t_'+id)?.focus(), 60);
+}
+function removeSection(id) {
+  if (sections.length === 1) { showToast('Must keep at least one section'); return; }
+  sections = sections.filter(s => s.id !== id);
+  renderSections();
+}
+function renderSections() {
+  const c = document.getElementById('sections');
+  c.innerHTML = '';
+  sections.forEach((sec, i) => {
+    const el = document.createElement('div');
+    el.className = 'section-block';
+    el.innerHTML = `
+      <div class="section-header">
+        <div class="section-num">${i+1}</div>
+        <input class="section-title" id="t_${sec.id}" placeholder="Section Title" value="${esc(sec.title)}" oninput="updateTitle('${sec.id}',this.value)">
+        <button class="rm-btn" onclick="removeSection('${sec.id}')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+      </div>
+      <div class="note-editor" id="n_${sec.id}" contenteditable="true"
+        data-placeholder="Write your notes here… type John 3:16 and it becomes a tappable verse."
+        onfocus="activeSection='${sec.id}'"
+        onblur="processRefs('${sec.id}')"></div>`;
+    c.appendChild(el);
+    const ed = document.getElementById('n_'+sec.id);
+    if (sec.contentHTML) { ed.innerHTML = sec.contentHTML; bindChips(ed); }
+  });
+}
+function updateTitle(id, v) { const s=sections.find(x=>x.id===id); if(s) s.title=v; }
+
+// ── AUTO-DETECT ────────────────────────────────────────────────
+const REF_RE = /\b((?:[123]\s*)?[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)\s+(\d+):(\d+)(?:-(\d+))?\b/g;
+function processRefs(id) {
+  const ed = document.getElementById('n_'+id);
+  if (!ed) return;
+  const walker = document.createTreeWalker(ed, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let n;
+  while ((n = walker.nextNode())) { if (!n.parentElement.classList.contains('verse-chip')) nodes.push(n); }
+  let changed = false;
+  nodes.forEach(tn => {
+    const txt = tn.textContent;
+    const res = txt.replace(REF_RE, (match, book, ch, vs, ve) => {
+      const raw = book.trim() + ' ' + ch + ':' + vs + (ve?'-'+ve:'');
+      if (!parseRef(raw)) return match;
+      changed = true;
+      return buildChipHTML(raw);
+    });
+    if (res !== txt) { const w = document.createElement('span'); w.innerHTML = res; tn.replaceWith(...w.childNodes); }
+  });
+  if (changed) bindChips(ed);
+  const s = sections.find(x=>x.id===id);
+  if (s) s.contentHTML = ed.innerHTML;
+}
+function buildChipHTML(ref) {
+  const sr = ref.replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  return `<span class="verse-chip" data-ref="${sr}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>${ref}</span>`;
+}
+function bindChips(container) {
+  container.querySelectorAll('.verse-chip').forEach(chip => {
+    chip.onclick = e => { e.stopPropagation(); showPopup(chip, chip.dataset.ref); };
+  });
+}
+
+// ── MODAL ──────────────────────────────────────────────────────
+function openModal() { document.getElementById('modal').style.display='flex'; setTimeout(()=>document.getElementById('verseInput').focus(),120); }
+function closeModal() { document.getElementById('modal').style.display='none'; document.getElementById('verseInput').value=''; }
+function doInsertVerse() {
+  const ref = document.getElementById('verseInput').value.trim();
+  if (!ref) { showToast('Enter a verse reference'); return; }
+  if (!parseRef(ref)) { showToast('Could not recognise that reference'); return; }
+  const tid = activeSection || sections[0]?.id;
+  if (!tid) return;
+  const ed = document.getElementById('n_'+tid);
+  if (!ed) return;
+  ed.focus();
+  const chip = document.createElement('span');
+  chip.className = 'verse-chip'; chip.dataset.ref = ref;
+  chip.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>${ref}`;
+  chip.onclick = e => { e.stopPropagation(); showPopup(chip, ref); };
+  const sel = window.getSelection();
+  if (sel && sel.rangeCount && ed.contains(sel.getRangeAt(0).startContainer)) {
+    const r = sel.getRangeAt(0); r.deleteContents();
+    r.insertNode(document.createTextNode('\u00A0')); r.insertNode(chip);
+    r.collapse(false); sel.removeAllRanges(); sel.addRange(r);
+  } else { ed.appendChild(document.createTextNode('\u00A0')); ed.appendChild(chip); ed.appendChild(document.createTextNode('\u00A0')); }
+  const s = sections.find(x=>x.id===tid); if(s) s.contentHTML=ed.innerHTML;
+  closeModal(); showToast('Verse inserted ✓');
+}
+
+// ── POPUP ──────────────────────────────────────────────────────
+let activeChip = null;
+function showPopup(chipEl, ref) {
+  activeChip = chipEl;
+  const popup = document.getElementById('popup');
+  document.getElementById('popup-ref').textContent = ref;
+  document.getElementById('popup-body').innerHTML = '<div class="popup-loading"><div class="spinner"></div>Loading…</div>';
+  positionPopup(popup, chipEl);
+  popup.style.display = 'block';
+  fetchVerse(ref)
+    .then(html => { document.getElementById('popup-body').innerHTML = `<div class="popup-text">${html}</div>`; })
+    .catch(err => { document.getElementById('popup-body').innerHTML = `<div class="popup-error">⚠️ ${err.message||'Could not load verse'}.<br>Check the reference and your internet connection.</div>`; });
+  setTimeout(() => document.addEventListener('click', outsideClick), 10);
+}
+function outsideClick(e) {
+  const popup = document.getElementById('popup');
+  if (!popup.contains(e.target) && e.target !== activeChip && !activeChip?.contains(e.target)) closePopup();
+}
+function closePopup() { document.getElementById('popup').style.display='none'; document.removeEventListener('click', outsideClick); activeChip=null; }
+function positionPopup(popup, anchor) {
+  const r = anchor.getBoundingClientRect(), pw=320, ph=200;
+  let left=r.left, top=r.bottom+8;
+  if(left+pw>window.innerWidth-16) left=window.innerWidth-pw-16;
+  if(left<16) left=16;
+  if(top+ph>window.innerHeight-16) top=r.top-ph-8;
+  if(top<16) top=16;
+  popup.style.left=left+'px'; popup.style.top=top+'px';
+}
+
+// ── SAVE / LOAD ────────────────────────────────────────────────
+function saveNotes() {
+  sections.forEach(s => {
+    const t=document.getElementById('t_'+s.id), n=document.getElementById('n_'+s.id);
+    if(t) s.title=t.value; if(n) s.contentHTML=n.innerHTML;
+  });
+  try {
+    localStorage.setItem('sn_v2', JSON.stringify({ title:document.getElementById('sermon-title').value, speaker:document.getElementById('sermon-speaker').value, sections, savedAt:new Date().toISOString() }));
+    showToast('Saved ✓');
+  } catch(e) { showToast('Storage full — could not save'); }
+}
+function loadNotes() {
+  try {
+    const raw=localStorage.getItem('sn_v2'); if(!raw) return;
+    const d=JSON.parse(raw);
+    document.getElementById('sermon-title').value=d.title||'';
+    autoResize(document.getElementById('sermon-title'));
+    document.getElementById('sermon-speaker').value=d.speaker||'';
+    if(d.sections?.length) { sections=d.sections; renderSections(); showToast('Notes restored'); }
+  } catch(e) {}
+}
+
+// ── PWA ─────────────────────────────────────────────────────────
+let deferredPrompt = null;
+function initPWA() {
+  // Register service worker
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./sw.js').then(reg => {
+      console.log('SW registered:', reg.scope);
+    }).catch(err => console.warn('SW registration failed:', err));
+  }
+  window.addEventListener('beforeinstallprompt', e => {
+    e.preventDefault(); deferredPrompt = e;
+    if (!localStorage.getItem('sn_install_dismissed')) {
+      setTimeout(() => document.getElementById('installBanner').classList.add('show'), 3000);
+    }
+  });
+  window.addEventListener('appinstalled', () => {
+    document.getElementById('installBanner').classList.remove('show');
+    showToast('App installed! 🎉');
+  });
+}
+function triggerInstall() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(c => {
+      if(c.outcome==='accepted') showToast('Installing…');
+      deferredPrompt=null;
+      document.getElementById('installBanner').classList.remove('show');
+    });
+  } else {
+    // iOS fallback
+    showToast('Tap Share → "Add to Home Screen"');
+    setTimeout(() => document.getElementById('installBanner').classList.remove('show'), 4000);
+  }
+}
+function dismissInstall() { document.getElementById('installBanner').classList.remove('show'); localStorage.setItem('sn_install_dismissed','1'); }
+
+// ── OFFLINE DETECTION ──────────────────────────────────────────
+function initOfflineDetection() {
+  const update = () => document.body.classList.toggle('offline', !navigator.onLine);
+  window.addEventListener('online', update);
+  window.addEventListener('offline', update);
+  update();
+}
+
+// ── UTILS ──────────────────────────────────────────────────────
+function autoResize(el) { el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+function esc(s) { return (s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(window._tt); window._tt=setTimeout(()=>t.classList.remove('show'),2600); }
+document.addEventListener('keydown', e => { if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveNotes();} if(e.key==='Escape'){closePopup();closeModal();} });
+window.addEventListener('scroll', () => { if(activeChip&&document.getElementById('popup').style.display!=='none') positionPopup(document.getElementById('popup'),activeChip); },{passive:true});
+</script>
+</body>
+</html>
