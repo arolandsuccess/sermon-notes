@@ -1,26 +1,15 @@
 {
   "name": "SermonNotes",
   "short_name": "SermonNotes",
-  "description": "Beautiful sermon note-taking app with live NKJV Bible verse lookup",
+  "description": "Sermon note-taking app with live NKJV Bible verse lookup",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "portrait",
-  "background_color": "#f7f7f5",
+  "background_color": "#f7f6f1",
   "theme_color": "#2d6a4f",
-  "categories": ["productivity", "lifestyle"],
   "icons": [
-    {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any maskable"
-    }
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
