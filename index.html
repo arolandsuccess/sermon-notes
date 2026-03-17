@@ -131,10 +131,97 @@ body.sermon-mode .btn-share{background:var(--accent);border-color:var(--accent)}
 /* Sections */
 
 
-.note-editor{font-family:'DM Sans',sans-serif;font-size:.95rem;line-height:1.9;color:var(--text);background:transparent;width:100%;min-height:70px;padding-left:32px;outline:none;white-space:pre-wrap;word-break:break-word}
+.note-editor{font-family:'DM Sans',sans-serif;font-size:.95rem;line-height:1.9;color:var(--text);background:transparent;width:100%;min-height:200px;padding:4px 0 0 0;outline:none;word-break:break-word}
 .note-editor:empty::before{content:attr(data-placeholder);color:var(--subtle);pointer-events:none}
 body.sermon-mode .note-editor{font-size:1.1rem;line-height:2.2}
 body.sermon-mode .sermon-title-input{font-size:clamp(1.8rem,5vw,2.5rem)}
+
+/* ══ FORMATTING TOOLBAR ══════════════════════ */
+.fmt-bar{
+  position:sticky;top:calc(48px + var(--st));z-index:150;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;margin-bottom:12px;
+  display:flex;align-items:center;gap:1px;padding:4px 5px;
+  box-shadow:0 2px 8px rgba(0,0,0,.06);
+  flex-wrap:nowrap;overflow:hidden;
+  transition:background .3s,border-color .3s;
+}
+body.sermon-mode .fmt-bar{background:var(--surface);border-color:var(--border)}
+
+.fmt-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:6px;border:none;
+  background:none;color:var(--muted);cursor:pointer;
+  font-size:.78rem;font-weight:700;font-family:'DM Sans',sans-serif;
+  transition:all .12s;-webkit-tap-highlight-color:transparent;
+  flex-shrink:0;position:relative;
+}
+.fmt-btn svg{width:14px;height:14px;pointer-events:none}
+.fmt-btn:hover{background:var(--border);color:var(--text)}
+.fmt-btn:active{transform:scale(.92)}
+.fmt-btn.active{background:var(--accent-lt);color:var(--accent)}
+.fmt-btn.active svg{stroke:var(--accent)}
+
+.fmt-sep{width:1px;height:20px;background:var(--border);margin:0 3px;flex-shrink:0}
+
+/* Font size select inside toolbar */
+.fmt-size{
+  height:30px;padding:0 6px;border-radius:6px;border:1px solid var(--border);
+  background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;
+  font-size:.75rem;font-weight:500;cursor:pointer;outline:none;
+  -webkit-appearance:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='5'%3E%3Cpath d='M0 0l4 5 4-5z' fill='%238c8880'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 5px center;
+  padding-right:18px;flex-shrink:0;
+}
+
+/* Overflow menu */
+.fmt-more-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:6px;border:none;
+  background:none;color:var(--muted);cursor:pointer;
+  transition:all .12s;-webkit-tap-highlight-color:transparent;
+  flex-shrink:0;margin-left:auto;
+}
+.fmt-more-btn:hover{background:var(--border);color:var(--text)}
+.fmt-more-btn svg{width:14px;height:14px}
+
+.fmt-dropdown{
+  position:absolute;top:calc(100% + 6px);right:0;z-index:300;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:10px;box-shadow:0 8px 32px rgba(0,0,0,.12);
+  padding:6px;min-width:180px;
+  animation:popIn .15s cubic-bezier(.34,1.4,.64,1);
+  display:none;
+}
+.fmt-dropdown.open{display:block}
+.fmt-dropdown-row{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fmt-dropdown-row:hover{background:var(--bg)}
+.fmt-dropdown-row svg{width:14px;height:14px;color:var(--accent);flex-shrink:0}
+.fmt-dropdown-label{font-size:.82rem;color:var(--text);font-family:'DM Sans',sans-serif}
+.fmt-dropdown-sub{font-size:.7rem;color:var(--muted);margin-left:auto;white-space:nowrap}
+.fmt-dropdown-sep{height:1px;background:var(--border);margin:4px 0}
+
+/* colour swatches for highlight */
+.fmt-colors{display:flex;gap:5px;padding:5px 6px;flex-wrap:wrap}
+.fmt-swatch{width:20px;height:20px;border-radius:4px;border:2px solid transparent;cursor:pointer;transition:transform .1s;-webkit-tap-highlight-color:transparent}
+.fmt-swatch:hover{transform:scale(1.2)}
+.fmt-swatch.sel{border-color:var(--text)}
+
+/* Rendered formatting inside the editor */
+.note-editor mark{border-radius:3px;padding:0 1px}
+.note-editor blockquote{border-left:3px solid var(--accent);margin:6px 0 6px 8px;padding:4px 12px;color:var(--muted);font-style:italic;border-radius:0 6px 6px 0;background:var(--accent-ltr)}
+.note-editor ul,.note-editor ol{padding-left:24px;margin:4px 0}
+.note-editor li{margin:2px 0}
+.note-editor h2{font-family:'Lora',serif;font-size:1.15rem;font-weight:600;margin:10px 0 4px;color:var(--text)}
+.note-editor h3{font-family:'Lora',serif;font-size:1rem;font-weight:600;margin:8px 0 3px;color:var(--text)}
+.note-editor hr{border:none;border-top:1px solid var(--border);margin:12px 0}
+.note-editor a{color:var(--accent);text-decoration:underline}
+
+/* Mobile: hide secondary tools */
+@media(max-width:480px){
+  .fmt-hide-mobile{display:none!important}
+}
 
 
 
@@ -333,9 +420,145 @@ body.sermon-mode .sermon-title-input{font-size:clamp(1.8rem,5vw,2.5rem)}
       <div class="meta-field"><div class="meta-label">Topic</div><input class="meta-input" id="meta-series" placeholder="e.g. Faith, Grace, Prayer…" oninput="autoSaveTitle()"></div>
     </div>
     <div class="divider"></div>
-    <div class="note-editor" id="main-note" contenteditable="true"
+
+    <!-- FORMATTING TOOLBAR -->
+    <div class="fmt-bar" id="fmtBar">
+      <!-- Bold -->
+      <button class="fmt-btn" id="btn-bold" onclick="fmt('bold')" title="Bold (Ctrl+B)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8"><path d="M6 4h8a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/><path d="M6 12h9a4 4 0 0 1 4 4 4 4 0 0 1-4 4H6z"/></svg>
+      </button>
+      <!-- Italic -->
+      <button class="fmt-btn" id="btn-italic" onclick="fmt('italic')" title="Italic (Ctrl+I)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="19" y1="4" x2="10" y2="4"/><line x1="14" y1="20" x2="5" y2="20"/><line x1="15" y1="4" x2="9" y2="20"/></svg>
+      </button>
+      <!-- Underline -->
+      <button class="fmt-btn" id="btn-underline" onclick="fmt('underline')" title="Underline (Ctrl+U)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 3v7a6 6 0 0 0 6 6 6 6 0 0 0 6-6V3"/><line x1="4" y1="21" x2="20" y2="21"/></svg>
+      </button>
+
+      <div class="fmt-sep"></div>
+
+      <!-- Highlight (yellow default) -->
+      <button class="fmt-btn" id="btn-highlight" onclick="fmtHighlight()" title="Highlight">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M9 3L5 7l10 10 4-4L9 3z"/><path d="M5 7l-2 9 9-2"/><line x1="2" y1="22" x2="22" y2="22"/></svg>
+      </button>
+
+      <div class="fmt-sep fmt-hide-mobile"></div>
+
+      <!-- Heading -->
+      <button class="fmt-btn fmt-hide-mobile" id="btn-h2" onclick="fmtBlock('h2')" title="Heading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+      </button>
+      <!-- Bullet list -->
+      <button class="fmt-btn fmt-hide-mobile" id="btn-ul" onclick="fmtList('ul')" title="Bullet list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+      </button>
+      <!-- Numbered list -->
+      <button class="fmt-btn fmt-hide-mobile" id="btn-ol" onclick="fmtList('ol')" title="Numbered list">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4" stroke-linecap="round"/><path d="M4 10h2" stroke-linecap="round"/><path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1" stroke-linecap="round"/></svg>
+      </button>
+      <!-- Quote -->
+      <button class="fmt-btn fmt-hide-mobile" id="btn-quote" onclick="fmtBlock('blockquote')" title="Quote block">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c0 2.25.25 4-2.75 4v3c0 1 0 1 1 1z"/></svg>
+      </button>
+
+      <div class="fmt-sep"></div>
+
+      <!-- Font size -->
+      <select class="fmt-size fmt-hide-mobile" id="fmt-size-sel" onchange="fmtSize(this.value)" title="Font size">
+        <option value="">Size</option>
+        <option value="small">Small</option>
+        <option value="normal">Normal</option>
+        <option value="large">Large</option>
+      </select>
+
+      <div class="fmt-sep fmt-hide-mobile"></div>
+
+      <!-- Undo / Redo -->
+      <button class="fmt-btn" onclick="document.execCommand('undo')" title="Undo (Ctrl+Z)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg>
+      </button>
+      <button class="fmt-btn fmt-hide-mobile" onclick="document.execCommand('redo')" title="Redo (Ctrl+Y)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+      </button>
+
+      <!-- More / overflow menu -->
+      <div style="position:relative;margin-left:auto">
+        <button class="fmt-more-btn" id="fmtMoreBtn" onclick="toggleFmtMenu(event)" title="More options">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none"/></svg>
+        </button>
+        <div class="fmt-dropdown" id="fmtDropdown">
+          <!-- Visible on mobile -->
+          <div class="fmt-dropdown-row" onclick="fmtBlock('h2');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M4 6h16M4 12h16M4 18h7"/></svg>
+            <span class="fmt-dropdown-label">Heading</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmtList('ul');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="9" y1="6" x2="20" y2="6"/><line x1="9" y1="12" x2="20" y2="12"/><line x1="9" y1="18" x2="20" y2="18"/><circle cx="4" cy="6" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="12" r="1.5" fill="currentColor" stroke="none"/><circle cx="4" cy="18" r="1.5" fill="currentColor" stroke="none"/></svg>
+            <span class="fmt-dropdown-label">Bullet List</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmtList('ol');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="10" y1="6" x2="21" y2="6"/><line x1="10" y1="12" x2="21" y2="12"/><line x1="10" y1="18" x2="21" y2="18"/><path d="M4 6h1v4M4 10h2" stroke-linecap="round"/></svg>
+            <span class="fmt-dropdown-label">Numbered List</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmtBlock('blockquote');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>
+            <span class="fmt-dropdown-label">Quote Block</span>
+          </div>
+          <div class="fmt-dropdown-sep"></div>
+          <!-- Highlight colours -->
+          <div style="padding:4px 6px 2px"><span style="font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Highlight colour</span></div>
+          <div class="fmt-colors">
+            <div class="fmt-swatch" style="background:#fef08a" title="Yellow" onclick="fmtHighlight('#fef08a');closeFmtMenu()"></div>
+            <div class="fmt-swatch" style="background:#bbf7d0" title="Green" onclick="fmtHighlight('#bbf7d0');closeFmtMenu()"></div>
+            <div class="fmt-swatch" style="background:#bfdbfe" title="Blue" onclick="fmtHighlight('#bfdbfe');closeFmtMenu()"></div>
+            <div class="fmt-swatch" style="background:#fecaca" title="Red" onclick="fmtHighlight('#fecaca');closeFmtMenu()"></div>
+            <div class="fmt-swatch" style="background:#e9d5ff" title="Purple" onclick="fmtHighlight('#e9d5ff');closeFmtMenu()"></div>
+            <div class="fmt-swatch" style="background:#fed7aa" title="Orange" onclick="fmtHighlight('#fed7aa');closeFmtMenu()"></div>
+          </div>
+          <div class="fmt-dropdown-sep"></div>
+          <!-- Font size (mobile) -->
+          <div style="padding:4px 6px 2px"><span style="font-size:.68rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.08em">Font size</span></div>
+          <div class="fmt-dropdown-row" onclick="fmtSize('small');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="4" y="18" font-size="12" fill="currentColor" stroke="none" font-family="sans-serif">A</text></svg>
+            <span class="fmt-dropdown-label">Small</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmtSize('normal');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="2" y="19" font-size="16" fill="currentColor" stroke="none" font-family="sans-serif">A</text></svg>
+            <span class="fmt-dropdown-label">Normal</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmtSize('large');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><text x="1" y="20" font-size="20" fill="currentColor" stroke="none" font-family="sans-serif">A</text></svg>
+            <span class="fmt-dropdown-label">Large</span>
+          </div>
+          <div class="fmt-dropdown-sep"></div>
+          <!-- Divider / clear -->
+          <div class="fmt-dropdown-row" onclick="fmtDivider();closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><line x1="3" y1="12" x2="21" y2="12"/></svg>
+            <span class="fmt-dropdown-label">Insert Divider</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmt('removeFormat');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M6 19 17.94 7M10.85 3H19l-3 9m-8.15 0L5 19h7"/></svg>
+            <span class="fmt-dropdown-label">Clear Formatting</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="toggleSpellCheck();closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            <span class="fmt-dropdown-label">Spell Check</span><span class="fmt-dropdown-sub" id="spellCheckLabel">Off</span>
+          </div>
+          <div class="fmt-dropdown-row" onclick="fmt('redo');closeFmtMenu()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3L21 13"/></svg>
+            <span class="fmt-dropdown-label">Redo</span><span class="fmt-dropdown-sub">Ctrl+Y</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note-editor" id="main-note" contenteditable="true" spellcheck="false"
       data-placeholder="Start writing your notes… type a reference like John 3:16 and it becomes a tappable verse chip."
-      onblur="processMainNote()"></div>
+      onblur="handleEditorBlur(event)"
+      onkeyup="updateFmtState()"
+      onmouseup="updateFmtState()"
+      ontouchend="updateFmtState()"></div>
     <div class="collection-panel" id="collectionPanel">
       <div class="collection-header">
         <div><div class="collection-title">📚 Verse Collection</div><div class="collection-sub">All verses referenced in this sermon</div></div>
@@ -475,7 +698,6 @@ function parseRef(r){r=(r||'').trim();const m=r.match(/^((?:[123]\s*)?[A-Za-z]+(
 // ═══════════════════════════════════════════
 let sermons=[], currentSermonId=null;
 let currentTranslation='NKJV', sermonMode=false, verseCollection={};
-const verseCache={};
 let pendingDeleteId=null;
 
 // ═══════════════════════════════════════════
@@ -648,20 +870,24 @@ function processMainNote(){
   if(!ed)return;
   const walker=document.createTreeWalker(ed,NodeFilter.SHOW_TEXT);
   const nodes=[];let n;
-  while((n=walker.nextNode())){if(!n.parentElement.classList.contains('verse-chip')&&!n.parentElement.classList.contains('verse-inline-expanded'))nodes.push(n);}
+  while((n=walker.nextNode())){
+    if(!n.parentElement.closest('.verse-chip')&&!n.parentElement.closest('.verse-inline-expanded'))nodes.push(n);
+  }
   let changed=false;
   nodes.forEach(tn=>{
     const txt=tn.textContent;
     const res=txt.replace(REF_RE,(match,book,ch,vs,ve)=>{
       const raw=book.trim()+' '+ch+':'+vs+(ve?'-'+ve:'');
       if(!parseRef(raw))return match;
-      changed=true; addToCollection(raw);
+      changed=true;
       return buildChipHTML(raw);
     });
     if(res!==txt){const w=document.createElement('span');w.innerHTML=res;tn.replaceWith(...w.childNodes);}
   });
   if(changed)bindChips(ed);
-  // save to current sermon
+  // Always rebuild collection from what's actually in the DOM
+  syncCollection(ed);
+  // persist
   const idx=sermons.findIndex(s=>s.id===currentSermonId);
   if(idx>-1)sermons[idx].noteHTML=ed.innerHTML;
 }
@@ -695,24 +921,33 @@ function toggleInlineExpand(chip){
   chip.parentNode.insertBefore(el,chip.nextSibling);
   fetchVerse(ref,currentTranslation).then(html=>{
     el.innerHTML=`<span class="verse-inline-ref">${ref} · ${currentTranslation}</span>${html}`;
-    addToCollection(ref,el.textContent.replace(ref+' · '+currentTranslation,'').trim().slice(0,60));
+    // update preview in collection if we have it
+    if(verseCollection[ref]&&!verseCollection[ref].preview){
+      verseCollection[ref].preview=html.replace(/<[^>]+>/g,'').trim().slice(0,60);
+      renderCollection();
+    }
   }).catch(err=>{el.innerHTML=`<span class="verse-inline-ref">${ref}</span><span style="color:var(--muted);font-style:normal;font-size:.82rem">⚠️ ${err.message}</span>`;});
 }
 
 // ═══════════════════════════════════════════
-//  VERSE COLLECTION
+//  VERSE COLLECTION  — always driven by DOM chips
 // ═══════════════════════════════════════════
-function addToCollection(ref,preview){
-  if(!verseCollection[ref]){verseCollection[ref]={preview:preview||''};renderCollection();}
-  else if(preview&&!verseCollection[ref].preview){verseCollection[ref].preview=preview;renderCollection();}
-}
-function rebuildCollection(){
-  verseCollection={};
-  const ed=document.getElementById('main-note');
+
+// Sync collection to exactly what chips exist in the editor right now
+function syncCollection(ed){
+  ed=ed||document.getElementById('main-note');
   if(!ed)return;
-  ed.querySelectorAll('.verse-chip').forEach(c=>{if(c.dataset.ref)verseCollection[c.dataset.ref]=verseCollection[c.dataset.ref]||{preview:''};});
+  const chips=[...ed.querySelectorAll('.verse-chip')];
+  const inDOM=new Set(chips.map(c=>c.dataset.ref).filter(Boolean));
+  // remove refs no longer in DOM
+  Object.keys(verseCollection).forEach(r=>{if(!inDOM.has(r))delete verseCollection[r];});
+  // add new ones
+  inDOM.forEach(r=>{if(!verseCollection[r])verseCollection[r]={preview:''};});
   renderCollection();
 }
+
+function rebuildCollection(){syncCollection();}
+
 function renderCollection(){
   const refs=Object.keys(verseCollection);
   const emptyEl=document.getElementById('collectionEmpty'),listEl=document.getElementById('collectionList');
@@ -810,19 +1045,88 @@ function switchInstallTab(tab,el){
 // ═══════════════════════════════════════════
 //  BIBLE API
 // ═══════════════════════════════════════════
-async function fetchVerse(ref,translation){
-  const key=translation+'|'+ref;
+// ═══════════════════════════════════════════
+//  BIBLE FETCH  — memory + localStorage cache for offline
+// ═══════════════════════════════════════════
+const verseCache={};
+const VERSE_STORE='sn_verses_v1';
+
+function vcKey(translation,ref){return translation+'|'+ref;}
+
+function vcLoad(key){
+  // memory first
   if(verseCache[key])return verseCache[key];
-  const p=parseRef(ref);if(!p)throw new Error('Unrecognised reference');
-  const code=TRANS_CODES[translation]||'NKJV';
-  const res=await fetch(`https://bolls.life/get-text/${code}/${p.bookId}/${p.chapter}/`);
-  if(!res.ok)throw new Error('Network error ('+res.status+')');
-  const data=await res.json();
-  const end=p.verseEnd||p.verseStart;
-  const sel=data.filter(v=>v.verse>=p.verseStart&&v.verse<=end);
-  if(!sel.length)throw new Error('Verse not found');
-  const html=sel.map(v=>`<sup class="vnum">${v.verse}</sup>${v.text.replace(/<[^>]+>/g,'').trim()}`).join(' ');
-  verseCache[key]=html;return html;
+  // then localStorage
+  try{
+    const raw=localStorage.getItem(VERSE_STORE);
+    const store=raw?JSON.parse(raw):{};
+    if(store[key]){verseCache[key]=store[key];return store[key];}
+  }catch(e){}
+  return null;
+}
+
+function vcSave(key,html){
+  verseCache[key]=html;
+  try{
+    const raw=localStorage.getItem(VERSE_STORE);
+    const store=raw?JSON.parse(raw):{};
+    store[key]=html;
+    // keep store under ~4MB — prune oldest if needed
+    const keys=Object.keys(store);
+    if(keys.length>800)delete store[keys[0]];
+    localStorage.setItem(VERSE_STORE,JSON.stringify(store));
+  }catch(e){}
+}
+
+async function fetchVerse(ref,translation){
+  const key=vcKey(translation,ref);
+  const cached=vcLoad(key);
+  if(cached)return cached;
+
+  const p=parseRef(ref);
+  if(!p)throw new Error('Unrecognised reference');
+
+  // Try Bolls.life first
+  try{
+    const code=TRANS_CODES[translation]||'NKJV';
+    const url=`https://bolls.life/get-text/${code}/${p.bookId}/${p.chapter}/`;
+    const res=await fetch(url);
+    if(res.ok){
+      const data=await res.json();
+      const end=p.verseEnd||p.verseStart;
+      const sel=data.filter(v=>v.verse>=p.verseStart&&v.verse<=end);
+      if(sel.length){
+        const html=sel.map(v=>`<sup class="vnum">${v.verse}</sup>${v.text.replace(/<[^>]+>/g,'').trim()}`).join(' ');
+        vcSave(key,html);
+        return html;
+      }
+    }
+  }catch(e){}
+
+  // Fallback — bible-api.com (supports KJV, WEB, ASV, YLT, DARBY, GENEVA, etc.)
+  try{
+    const transMap={NKJV:'kjv',KJV:'kjv',NIV:'web',ESV:'web',NLT:'web'};
+    const t=transMap[translation]||'kjv';
+    const verseStr=p.verseEnd
+      ? `${ref.replace(/\s+/g,'+')}`
+      : `${ref.replace(/\s+/g,'+')}`;
+    const url=`https://bible-api.com/${encodeURIComponent(ref)}?translation=${t}`;
+    const res=await fetch(url);
+    if(res.ok){
+      const data=await res.json();
+      if(data.verses&&data.verses.length){
+        const html=data.verses.map(v=>`<sup class="vnum">${v.verse}</sup>${v.text.replace(/\n/g,' ').trim()}`).join(' ');
+        vcSave(key,html);
+        return html;
+      }
+    }
+  }catch(e){}
+
+  // Both failed
+  if(!navigator.onLine){
+    throw new Error('You\'re offline. Tap this verse while online to save it for offline use.');
+  }
+  throw new Error('Could not load verse. Check your connection and try again.');
 }
 
 function showPopupForRef(ref){
@@ -896,7 +1200,7 @@ function doInsertVerse(){
   sel.removeAllRanges();
   sel.addRange(cur);
 
-  addToCollection(ref);
+  syncCollection(ed);
   showToast('Verse inserted — tap ▾ to expand');
 }
 
@@ -927,9 +1231,138 @@ function dismissBanner(){document.getElementById('installBanner').classList.remo
 function autoResize(el){el.style.height='auto';el.style.height=el.scrollHeight+'px';}
 function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/'/g,'&#39;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(window._tt);window._tt=setTimeout(()=>t.classList.remove('show'),2600);}
+// ═══════════════════════════════════════════
+//  RICH TEXT FORMATTING
+// ═══════════════════════════════════════════
+let currentHighlight='#fef08a';
+let spellCheckOn=false;
+
+function fmt(cmd){
+  document.getElementById('main-note').focus();
+  document.execCommand(cmd,false,null);
+  updateFmtState();
+}
+
+function fmtHighlight(color){
+  color=color||currentHighlight;
+  currentHighlight=color;
+  const ed=document.getElementById('main-note');
+  ed.focus();
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed){showToast('Select text first to highlight');return;}
+  document.execCommand('hiliteColor',false,color);
+  updateFmtState();
+}
+
+function fmtSize(size){
+  const ed=document.getElementById('main-note');
+  ed.focus();
+  const map={small:'0.8em',normal:'1em',large:'1.3em'};
+  const px=map[size]||'1em';
+  const sel=window.getSelection();
+  if(!sel||sel.isCollapsed){
+    // Apply to future typing via a span
+    const span=document.createElement('span');
+    span.style.fontSize=px;
+    const range=sel.getRangeAt(0);
+    range.insertNode(span);
+    range.setStart(span,0);
+    range.collapse(true);
+    sel.removeAllRanges();sel.addRange(range);
+  } else {
+    document.execCommand('fontSize',false,'3');
+    // Replace font elements with styled spans
+    ed.querySelectorAll('font[size="3"]').forEach(f=>{
+      const sp=document.createElement('span');
+      sp.style.fontSize=px;
+      sp.innerHTML=f.innerHTML;
+      f.replaceWith(sp);
+    });
+  }
+  const sel2=document.getElementById('fmt-size-sel');
+  if(sel2)sel2.value=size;
+}
+
+function fmtList(type){
+  document.getElementById('main-note').focus();
+  if(type==='ul') document.execCommand('insertUnorderedList',false,null);
+  else document.execCommand('insertOrderedList',false,null);
+  updateFmtState();
+}
+
+function fmtBlock(tag){
+  document.getElementById('main-note').focus();
+  if(tag==='blockquote'){
+    document.execCommand('formatBlock',false,'blockquote');
+  } else if(tag==='h2'){
+    // Toggle between h2 and p
+    const block=document.queryCommandValue('formatBlock');
+    document.execCommand('formatBlock',false,block==='h2'?'p':'h2');
+  }
+  updateFmtState();
+}
+
+function fmtDivider(){
+  const ed=document.getElementById('main-note');
+  ed.focus();
+  document.execCommand('insertHTML',false,'<hr>');
+}
+
+function toggleSpellCheck(){
+  spellCheckOn=!spellCheckOn;
+  const ed=document.getElementById('main-note');
+  ed.spellcheck=spellCheckOn;
+  ed.setAttribute('spellcheck',spellCheckOn?'true':'false');
+  document.getElementById('spellCheckLabel').textContent=spellCheckOn?'On':'Off';
+  showToast('Spell check '+(spellCheckOn?'enabled':'disabled'));
+}
+
+// Only process refs when focus truly leaves the editing area
+function handleEditorBlur(e){
+  const rel=e.relatedTarget;
+  // Don't process if focus moved to formatting bar, a verse chip, or a modal
+  if(rel&&(
+    rel.closest('#fmtBar')||
+    rel.closest('.verse-chip')||
+    rel.closest('.modal')||
+    rel.closest('.share-sheet')||
+    rel.closest('.fmt-dropdown')
+  ))return;
+  processMainNote();
+  updateFmtState();
+}
+
+// Update toolbar active states
+function updateFmtState(){
+  const states={bold:'btn-bold',italic:'btn-italic',underline:'btn-underline'};
+  Object.entries(states).forEach(([cmd,id])=>{
+    const btn=document.getElementById(id);
+    if(btn) btn.classList.toggle('active',document.queryCommandState(cmd));
+  });
+}
+
+// Overflow menu
+function toggleFmtMenu(e){
+  e.stopPropagation();
+  document.getElementById('fmtDropdown').classList.toggle('open');
+}
+function closeFmtMenu(){
+  document.getElementById('fmtDropdown').classList.remove('open');
+}
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('fmtDropdown');
+  const mb=document.getElementById('fmtMoreBtn');
+  if(dd&&mb&&!dd.contains(e.target)&&!mb.contains(e.target)) closeFmtMenu();
+});
+
+// Keyboard shortcuts
 document.addEventListener('keydown',e=>{
-  if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveCurrentSermon();}
-  if(e.key==='Escape'){closePopup();closeModal();closeConfirm();closeShareSheet();closeInstallSheet();}
+  if((e.ctrlKey||e.metaKey)){
+    if(e.key==='s'){e.preventDefault();saveCurrentSermon();}
+    if(e.key==='z'&&!e.shiftKey){/* browser handles undo */}
+    if(e.key==='y'||(e.key==='z'&&e.shiftKey)){/* browser handles redo */}
+  }
+  if(e.key==='Escape'){closePopup();closeModal();closeConfirm();closeShareSheet();closeInstallSheet();closeFmtMenu();}
 });
 </script>
 </body>
