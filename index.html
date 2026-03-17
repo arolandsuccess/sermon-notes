@@ -324,12 +324,13 @@ body.sermon-mode .sermon-title-input{font-size:clamp(1.8rem,5vw,2.5rem)}
   </div>
 
   <div class="editor-page">
-    <textarea class="sermon-title-input" id="sermon-title" placeholder="Sermon Title" rows="1" oninput="autoResize(this)"></textarea>
+    <div class="meta-label" style="margin-bottom:6px">Sermon Title</div>
+    <textarea class="sermon-title-input" id="sermon-title" placeholder="e.g. Walking by Faith" rows="1" oninput="autoResize(this);autoSaveTitle()"></textarea>
     <div class="meta-grid">
-      <div class="meta-field"><div class="meta-label">Church</div><input class="meta-input" id="meta-church" placeholder="Church name"></div>
-      <div class="meta-field"><div class="meta-label">Date</div><input class="meta-input" id="meta-date" type="date"></div>
-      <div class="meta-field"><div class="meta-label">Speaker / Pastor</div><input class="meta-input" id="meta-speaker" placeholder="Pastor name"></div>
-      <div class="meta-field"><div class="meta-label">Series</div><input class="meta-input" id="meta-series" placeholder="Sermon series (optional)"></div>
+      <div class="meta-field"><div class="meta-label">Church</div><input class="meta-input" id="meta-church" placeholder="Church name" oninput="autoSaveTitle()"></div>
+      <div class="meta-field"><div class="meta-label">Date</div><input class="meta-input" id="meta-date" type="date" onchange="autoSaveTitle()"></div>
+      <div class="meta-field"><div class="meta-label">Speaker / Pastor</div><input class="meta-input" id="meta-speaker" placeholder="Pastor name" oninput="autoSaveTitle()"></div>
+      <div class="meta-field"><div class="meta-label">Topic</div><input class="meta-input" id="meta-series" placeholder="e.g. Faith, Grace, Prayer…" oninput="autoSaveTitle()"></div>
     </div>
     <div class="divider"></div>
     <div class="note-editor" id="main-note" contenteditable="true"
@@ -560,18 +561,16 @@ function renderLibrary(){
     const {label,items}=groups[key];
     const cards=items.map(s=>{
       const d=s.date?new Date(s.date+'T12:00:00'):new Date(s.createdAt);
-      const day=d.getDate(), mon=d.toLocaleDateString('en-US',{month:'short'});
-      const verses=Object.keys(s.verseCollection||{}).slice(0,3);
-      const extra=Object.keys(s.verseCollection||{}).length-3;
-      const preview=(s.noteHTML||'').replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim().slice(0,110);
-      const meta=[s.speaker,s.church].filter(Boolean).join(' · ');
+      const day=d.getDate();
+      const mon=d.toLocaleDateString('en-US',{month:'short'});
+      const fullDate=d.toLocaleDateString('en-US',{weekday:'short',day:'numeric',month:'long',year:'numeric'});
+      // Topic field (meta-series) is the sermon subject — use it as the card headline
+      const displayTitle=s.series||s.title||'';
       return `<div class="sermon-card" onclick="openSermon('${s.id}')">
         <div class="card-date-col"><div class="card-day">${day}</div><div class="card-mon">${mon}</div></div>
         <div class="card-body">
-          <div class="card-title${s.title?'':' untitled'}">${esc(s.title||'Untitled Sermon')}</div>
-          ${meta?`<div class="card-meta">${esc(meta)}</div>`:''}
-          ${preview?`<div class="card-preview">${esc(preview)}</div>`:''}
-          ${verses.length?`<div class="card-chips">${verses.map(v=>`<span class="card-verse-badge">${esc(v)}</span>`).join('')}${extra>0?`<span class="card-verse-badge">+${extra} more</span>`:''}</div>`:''}
+          <div class="card-title${displayTitle?'':' untitled'}">${esc(displayTitle||'Untitled Sermon')}</div>
+          <div class="card-meta">${esc(fullDate)}${s.speaker?' · '+esc(s.speaker):''}</div>
         </div>
         <div class="card-actions">
           <button class="card-action-btn" onclick="event.stopPropagation();shareSermon('${s.id}')" title="Share">
@@ -621,6 +620,17 @@ function saveCurrentSermon(silent=false){
   };
   saveAllSermons();
   if(!silent)showToast('Saved ✓');
+}
+
+function autoSaveTitle(){
+  if(!currentSermonId)return;
+  const idx=sermons.findIndex(s=>s.id===currentSermonId);
+  if(idx===-1)return;
+  sermons[idx].title=document.getElementById('sermon-title').value;
+  sermons[idx].series=document.getElementById('meta-series').value;
+  sermons[idx].speaker=document.getElementById('meta-speaker').value;
+  sermons[idx].date=document.getElementById('meta-date').value;
+  saveAllSermons();
 }
 
 // ═══════════════════════════════════════════
@@ -747,7 +757,7 @@ function buildShareText(versesOnly=false){
   if(d) lines.push(`📅 ${d}`);
   if(speaker) lines.push(`🎙️ ${speaker}`);
   if(church) lines.push(`⛪ ${church}`);
-  if(series) lines.push(`📚 Series: ${series}`);
+  if(series) lines.push(`🏷️ Topic: ${series}`);
   if(noteText){lines.push('');lines.push('─'.repeat(32));lines.push('');lines.push(noteText);}
   if(refs.length){
     lines.push('');lines.push('─'.repeat(32));

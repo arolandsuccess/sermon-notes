@@ -1,25 +1,10 @@
-const CACHE = 'sermon-notes-v2';
-const ASSETS = ['./index.html','./manifest.json','./icons/icon-192.png','./icons/icon-512.png'];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS).catch(()=>{})));
-  self.skipWaiting();
-});
-
-self.addEventListener('activate', e => {
-  e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));
-  self.clients.claim();
-});
-
+const CACHE = 'sermonnotes-v3';
+const ASSETS = ['./index.html', './manifest.json'];
+self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS))));
+self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k))))));
 self.addEventListener('fetch', e => {
-  if (new URL(e.request.url).hostname === 'bolls.life') {
-    e.respondWith(fetch(e.request).catch(() => new Response('[]', {headers:{'Content-Type':'application/json'}})));
-    return;
+  if (e.request.url.includes('bolls.life') || e.request.url.includes('fonts.googleapis')) {
+    return e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
   }
-  e.respondWith(caches.match(e.request).then(cached => cached || fetch(e.request).then(res => {
-    if (e.request.method === 'GET' && res.status === 200) {
-      caches.open(CACHE).then(c => c.put(e.request, res.clone()));
-    }
-    return res;
-  }).catch(() => e.request.destination === 'document' ? caches.match('./index.html') : undefined)));
+  e.respondWith(caches.match(e.request).then(r => r || fetch(e.request)));
 });

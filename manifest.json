@@ -1,15 +1,13 @@
 {
   "name": "SermonNotes",
   "short_name": "SermonNotes",
-  "description": "Sermon note-taking app with live NKJV Bible verse lookup",
+  "description": "Type a verse like John 3:16 and read it instantly inside your notes.",
   "start_url": "./index.html",
-  "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
-  "background_color": "#f7f6f1",
-  "theme_color": "#2d6a4f",
+  "background_color": "#f5f4f0",
+  "theme_color": "#1e5c3a",
   "icons": [
-    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png"}
   ]
 }
