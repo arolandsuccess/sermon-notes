@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="SermonNotes">
 <meta name="description" content="Type a verse like John 3:16 and read it instantly inside your notes.">
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-180.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="apple-touch-startup-image" href="icons/icon-512.png">
 <title>SermonNotes</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -239,10 +239,14 @@ body.sermon-mode .fmt-bar{background:var(--surface);border-color:var(--border)}
 
 /* Verse Collection */
 .collection-panel{margin-top:26px;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:var(--surface)}
-.collection-header{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);padding:13px 16px;display:flex;align-items:center;justify-content:space-between}
+.collection-header{background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 100%);padding:13px 16px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
 .collection-title{font-family:'Lora',serif;font-size:.95rem;font-weight:600;color:#fff}
 .collection-sub{font-size:.7rem;color:rgba(255,255,255,.7);margin-top:2px}
-.collection-body{padding:13px 16px}
+.collection-chevron{color:#fff;opacity:.85;transition:transform .28s cubic-bezier(.4,0,.2,1);flex-shrink:0;margin-left:8px}
+.collection-panel.is-open .collection-chevron{transform:rotate(180deg)}
+.collection-body{padding:13px 16px;overflow:hidden;max-height:0;transition:max-height .3s cubic-bezier(.4,0,.2,1),padding .3s ease}
+.collection-panel.is-open .collection-body{max-height:2000px;padding:13px 16px}
+.collection-panel:not(.is-open) .collection-body{padding-top:0;padding-bottom:0}
 .collection-empty{color:var(--muted);font-size:.83rem;font-style:italic;text-align:center;padding:10px 0}
 .verse-list-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
 .verse-list-item:last-child{border-bottom:none}
@@ -560,9 +564,12 @@ body.sermon-mode .fmt-bar{background:var(--surface);border-color:var(--border)}
       onmouseup="updateFmtState()"
       ontouchend="updateFmtState()"></div>
     <div class="collection-panel" id="collectionPanel">
-      <div class="collection-header">
-        <div><div class="collection-title">📚 Verse Collection</div><div class="collection-sub">All verses referenced in this sermon</div></div>
-        <button class="btn" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1);font-size:.73rem;padding:5px 9px" onclick="exportVerses()">Export</button>
+      <div class="collection-header" onclick="toggleCollection()">
+        <div><div class="collection-title">📚 Verse Collection</div><div class="collection-sub" id="collectionSub">Tap to expand</div></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <button class="btn" style="border-color:rgba(255,255,255,.3);color:#fff;background:rgba(255,255,255,.1);font-size:.73rem;padding:5px 9px" onclick="event.stopPropagation();exportVerses()">Export</button>
+          <svg class="collection-chevron" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
       </div>
       <div class="collection-body">
         <div class="collection-empty" id="collectionEmpty">Verse references will appear here as you type them.</div>
@@ -951,9 +958,22 @@ function rebuildCollection(){syncCollection();}
 function renderCollection(){
   const refs=Object.keys(verseCollection);
   const emptyEl=document.getElementById('collectionEmpty'),listEl=document.getElementById('collectionList');
-  if(!refs.length){emptyEl.style.display='block';listEl.innerHTML='';return;}
+  const sub=document.getElementById('collectionSub');
+  const panel=document.getElementById('collectionPanel');
+  const isOpen=panel.classList.contains('is-open');
+  if(!refs.length){emptyEl.style.display='block';listEl.innerHTML='';if(sub&&!isOpen)sub.textContent='Tap to expand';return;}
   emptyEl.style.display='none';
   listEl.innerHTML=refs.map(ref=>`<div class="verse-list-item"><div><div class="verse-list-ref">${esc(ref)}</div>${verseCollection[ref].preview?`<div class="verse-list-preview">${esc(verseCollection[ref].preview.slice(0,55))}…</div>`:''}</div><button class="verse-list-btn" onclick="showPopupForRef('${esc(ref)}')">Read</button></div>`).join('');
+  if(sub)sub.textContent=isOpen?`${refs.length} verse${refs.length!==1?'s':''} collected`:`${refs.length} verse${refs.length!==1?'s':''} — tap to expand`;
+}
+function toggleCollection(){
+  const panel=document.getElementById('collectionPanel');
+  const sub=document.getElementById('collectionSub');
+  const isOpen=panel.classList.toggle('is-open');
+  const count=Object.keys(verseCollection).length;
+  sub.textContent=isOpen
+    ?(count?`${count} verse${count!==1?'s':''} collected`:'All verses referenced in this sermon')
+    :(count?`${count} verse${count!==1?'s':''} — tap to expand`:'Tap to expand');
 }
 function exportVerses(){
   const refs=Object.keys(verseCollection);
