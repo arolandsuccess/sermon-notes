@@ -11,6 +11,10 @@
   "theme_color": "#1e5c3a",
   "categories": ["productivity", "lifestyle", "education"],
   "lang": "en-US",
+  "dir": "ltr",
+  "iarc_rating_id": "e84b072d-71b3-4d3e-86ae-31a8ce4e53b7",
+  "prefer_related_applications": false,
+  "related_applications": [],
   "icons": [
     {
       "src": "/sermon-notes/icons/icon-192.png",
@@ -43,7 +47,14 @@
       "sizes": "390x844",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "SermonNotes home screen"
+      "label": "SermonNotes home screen — type a verse and read it instantly"
+    },
+    {
+      "src": "/sermon-notes/icons/screenshot-mobile-2.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Verse Collection panel with saved Bible verses"
     }
   ],
   "shortcuts": [
@@ -54,5 +65,9 @@
       "url": "/sermon-notes/index.html?action=new",
       "icons": [{ "src": "/sermon-notes/icons/icon-192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "protocol_handlers": [],
+  "edge_side_panel": {
+    "preferred_width": 400
+  }
 }
